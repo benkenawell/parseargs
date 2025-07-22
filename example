@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# An example script calling parseargs.
+# Takes the --test, -t flag and is not strict
+
+config="$(jq -n '
+  {
+    "options": {
+      "test": {"type": "string", "short": "t"}
+    },
+    "strict": false
+  }
+')"
+
+# calling index.js directly
+# ./index.js --config "$config" "$@" | jq .
+
+# calling parseargs after running `npm link`
+# parses the args to this script. Pretty prints with jq
+parseargs --config "$config" "$@" | jq .
