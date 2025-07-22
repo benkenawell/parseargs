@@ -4,9 +4,33 @@ This is a utility script to aid with parsing command line arguments in other scr
 
 ## Installation
 
-Until I have this packaged into npm, probably just copy index.js and link to it somewhere on your PATH.  I recommend giving it the name "parseargs", but that's up to you.  I would **not** call it getopt or getopts, those are already executable names.
+`npm install --global @benkenawell/parseargs`
 
 You could also clone the repo and run `npm link` which should make it available anywhere you have that version of node as "parseargs"
+
+You could also just copy index.js and link to it somewhere on your PATH.  I recommend giving it the name "parseargs", but that's up to you.  I would **not** call it getopt or getopts, those are already executable names.
+
+## Usage
+
+This package is meant to be used as a script/executable, primarily in your shell.  There is nothing to import.
+
+```bash
+#!/usr/bin/env bash
+# An example script calling parseargs.
+# Takes the --test, -t flag and is not strict
+
+config="$(jq -n '
+  {
+    "options": {
+      "test": {"type": "string", "short": "t"}
+    },
+    "strict": false
+  }
+')"
+
+# parses the args to this script. Pretty prints with jq
+parseargs --config "$config" "$@" | jq .
+```
 
 ## Requirements
 
