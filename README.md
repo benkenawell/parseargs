@@ -20,12 +20,12 @@ I know Node well. Node has a solid utility function, [parseArgs](https://nodejs.
 
 Node is also very good at the JSON format.  [jq](https://jqlang.org/) is a command line utility that is _also_ very good at parsing json.  If we combine these JSON parsing functions, we can use JSON as an interchange format in the terminal.
 
-Is it a great idea? I'm not sure!  JSON is still text in the strict sense of the word, but does it fit the Unix philosophy?  I'm not sure!  But with jq I can parse through the returned arguments now a lot faster than I can remember awk.
+Is it a great idea? I'm not sure!  JSON is still text in the strict sense of the word, but does it fit the Unix philosophy?  I'm not sure!  But with jq I can parse through the returned arguments now a lot faster than I can remember awk. Is that faster than
 
 ## Who is this for?
 
-Me, primarily.  But if you want to use it too, please go ahead.  I would love to learn other people have this same problem.  
+Me, primarily.  But if you want to use it too, please go ahead.  I would love to learn that other people have this same problem.  
 
 Have an issue with my script? Please open an issue.
 
-I doubt my little script is going to be the fastest way to parse arguments like this, the returned json that I can parse with jq is really what I'm after.
+I doubt my little script is going to be the fastest way to parse arguments like this, I'm really after the returned json so I can parse further with jq.
