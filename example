@@ -16,4 +16,6 @@ config="$(jq -n '
 
 # calling parseargs after running `npm link`
 # parses the args to this script. Pretty prints with jq
-parseargs --config "$config" "$@" | jq .
+parseargs --config "$config" -- "$@" | jq .
+echo "------ ------"
+parseargs --option test=string -- --test one | jq .

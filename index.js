@@ -3,24 +3,39 @@
 if (process.argv.length === 2) {
   const { basename } = await import('node:path');
   process.stdout.write(`
-To use this utility, write a config
-that conforms to the NodeJS parseArgs library.
-Pass the options you want parsed as other arguments.
+
+Use "--" to separate arguments to this command from arguments you want to parse.
+
+--config <string>     JSON config to pass to nodejs parseArgs. Overridden by other options.
+--option <key>=<type> easy way to set an option key for parsing. Can be "string" or "boolean"
+--[no-]positional     whether to allow positionals or not
+--[no-]negative       whether to allow negatives or not
+--[no-]strict         whether to set the config to strict or not.
+
+Config Reference
+
+If you'd like, you can write a json config
+that conforms to the NodeJS parseArgs library. The other command line options take precedence over --config
+Pass the options you want parsed as other arguments, after a "--".
 
 Use jq to parse further on the command line
 
 Example: 
 
 > config=$(jq -n '{"options": {"test": {"type": "string"}}, "strict": false}')
-> ${basename(process.argv[1])} --config "$config" --test "what a lovely day" | jq .
+> ${basename(process.argv[1])} --config "$config" -- --test "what a lovely day" | jq .
 
 Example:
 > config=$(jq -n '{"options": {"test": {"type": "string"}}, "strict": false}')
-> args=$(${basename(process.argv[1])} --config "$config" "$@")
+> args=$(${basename(process.argv[1])} --config "$config" -- "$@")
 > jq .values.test <<<"$args"
 
 Config Reference:
 https://nodejs.org/api/util.html#utilparseargsconfig
+
+Example:
+
+> ${basename(process.argv[1])} --option one=string --no-strict -- --one two --three=four
 
 `);
   process.exit(0)
@@ -28,43 +43,59 @@ https://nodejs.org/api/util.html#utilparseargsconfig
 
 const { parseArgs } = await import('node:util')
 
+const splitIndex = process.argv.findIndex((val) => val === "--")
+
 // parse config out of the arguments
-const { values, tokens } = parseArgs({
-  allowPositionals: true,
-  allowNegatives: true,
-  strict: false,
+const { values } = parseArgs({
+  allowNegative: true,
   options: {
-    'config': {
-      "short": 'c',
-      "type": "string",
-    }
+    config: {
+      short: 'c',
+      type: "string",
+    },
+    option: {
+      short: "o",
+      type: "string",
+      multiple: true,
+    },
+    positional: {
+      type: 'boolean',
+    },
+    negative: {
+      type: 'boolean',
+    },
+    strict: {
+      type: 'boolean',
+    },
+    // TODO: add short option, to work like --option does
   },
-  tokens: true
+  args: process.argv.slice(2, splitIndex)
 });
 
-// if no config was provided, use a default relaxed one
 let config;
 try {
-  config = values.config && JSON.parse(values.config);
+  if (values.config) config = JSON.parse(values.config)
+  if (!config) config = {}
+  if (!config.options) config.options = {}
+  for (const option of (values.option ?? [])) {
+    // TODO: check type is a real type, parse better
+    const [key, type] = option.split("=")
+    config.options[key] = { type }
+  }
+  if (values.positional) config.allowPositionals = values.positional;
+  if (values.negative) config.allowNegative = values.negative;
+  if (values.strict) config.strict = values.strict;
+
 } catch {
   process.stderr.write("Unable to parse your config\n")
   process.exit(1)
 }
-config = config || {
-  allowPositionals: true,
-  allowNegatives: true,
-  strict: false
-}
 
-const slicedInput = process.argv.slice(2);
-const args = tokens
-  .filter(token => token.name !== 'config')
-  .reduce((acc, cur) => {
-    acc[cur.index] = slicedInput[cur.index]
-    return acc;
-  }, [])
-  // filter out empty slots, I know we'll have at least the config slot empty
-  .filter(token => typeof token === 'string')
+const args = process.argv.slice(splitIndex + 1);
+if (args.length <= 0) {
+  process.stderr.write('no arguments provided\n')
+  process.exit(1)
+}
 
 try {
   const output = parseArgs({ ...config, args })
