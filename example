@@ -19,3 +19,7 @@ config="$(jq -n '
 parseargs --config "$config" -- "$@" | jq .
 echo "------ ------"
 parseargs --option test=string -- --test one | jq .
+echo "------ ------"
+parseargs --option test=string,t -- -tone | jq .
+echo "------ ------"
+parseargs --option allow=boolean,a -- --no-allow | jq .
