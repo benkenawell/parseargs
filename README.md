@@ -29,7 +29,15 @@ config="$(jq -n '
 ')"
 
 # parses the args to this script. Pretty prints with jq
-parseargs --config "$config" "$@" | jq .
+parseargs --config "$config" -- "$@" | jq .
+```
+
+```bash
+parseargs --option test=string,t --no-strict -- "$@" | jq .
+```
+
+```bash
+parseargs --config "$(parseargs --option test=string,t --no-strict)" -- "$@" | jq .
 ```
 
 ## Requirements
