@@ -51,6 +51,9 @@ https://nodejs.org/api/util.html#utilparseargsconfig
 const { parseArgs } = await import('node:util')
 
 const splitIndex = process.argv.findIndex((val) => val === "--")
+let configArgs;
+if (splitIndex < 0) configArgs = process.argv.slice(2)
+else configArgs = process.argv.slice(2, splitIndex)
 
 // parse config out of the arguments
 const { values } = parseArgs({
@@ -76,7 +79,7 @@ const { values } = parseArgs({
     },
     // TODO: add short option, to work like --option does
   },
-  args: process.argv.slice(2, splitIndex)
+  args: configArgs
 });
 
 let config;
@@ -106,6 +109,12 @@ try {
   if (typeof err === 'object' && !!err && 'message' in err)
     process.stderr.write(`${err.message}\n`);
   process.exit(1)
+}
+
+// if -- wasn't found, print the config out
+if (splitIndex < 0) {
+  process.stdout.write(JSON.stringify(config))
+  process.exit(0)
 }
 
 const args = process.argv.slice(splitIndex + 1);
