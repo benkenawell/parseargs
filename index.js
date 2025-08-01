@@ -51,6 +51,10 @@ https://nodejs.org/api/util.html#utilparseargsconfig
 
 const { parseArgs } = await import('node:util')
 
+// TODO: read from stdin if isTTY is falsy.
+// remove the --config option? Then I could call it like =
+// parseargs --option test=string,t | parseargs "$@" | jq .
+// OR: parseargs "$@" <<<"$(parseargs --option test=string,t)" | jq .
 function parseConfig(args) {
   // parse config out of the arguments
   const { values } = parseArgs({
