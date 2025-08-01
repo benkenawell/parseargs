@@ -117,6 +117,14 @@ if (args.length <= 0) {
 try {
   const output = parseArgs({ ...config, args })
   process.stdout.write(JSON.stringify(output))
+  // TODO: add format option, something like --format json or --format headers
+  // Format headers should have values in header format and positionals separated by \n\n
+  // Example:
+  // <option>: <value>
+  // <option>: <value>
+  //   
+  // positional one
+  // positional two
 } catch {
   process.stderr.write("unable to parse your arguments.  Check your config\n")
   process.exit(1)
