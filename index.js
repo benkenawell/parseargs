@@ -6,6 +6,7 @@ if (process.argv.length === 2) {
 USAGE
 
   Use "--" to separate arguments to this command from arguments you want to parse.
+  Passing no separator will print the created config to stdout.
   
   --config <string>             JSON config to pass to nodejs parseArgs. Overridden by other options.
   --option <key>=<type>         easy way to set an option key for parsing. type can be "string" or "boolean"
@@ -50,40 +51,35 @@ https://nodejs.org/api/util.html#utilparseargsconfig
 
 const { parseArgs } = await import('node:util')
 
-const splitIndex = process.argv.findIndex((val) => val === "--")
-let configArgs;
-if (splitIndex < 0) configArgs = process.argv.slice(2)
-else configArgs = process.argv.slice(2, splitIndex)
+function parseConfig(args) {
+  // parse config out of the arguments
+  const { values } = parseArgs({
+    allowNegative: true,
+    options: {
+      config: {
+        short: 'c',
+        type: "string",
+      },
+      option: {
+        short: "o",
+        type: "string",
+        multiple: true,
+      },
+      positional: {
+        type: 'boolean',
+      },
+      negative: {
+        type: 'boolean',
+      },
+      strict: {
+        type: 'boolean',
+      },
+    },
+    args
+  });
 
-// parse config out of the arguments
-const { values } = parseArgs({
-  allowNegative: true,
-  options: {
-    config: {
-      short: 'c',
-      type: "string",
-    },
-    option: {
-      short: "o",
-      type: "string",
-      multiple: true,
-    },
-    positional: {
-      type: 'boolean',
-    },
-    negative: {
-      type: 'boolean',
-    },
-    strict: {
-      type: 'boolean',
-    },
-    // TODO: add short option, to work like --option does
-  },
-  args: configArgs
-});
-
-let config;
-try {
+  // merge the config together, preferring command line args over config arg
+  let config;
   if (values.config) config = JSON.parse(values.config)
   if (!config) config = {}
   if (!config.options) config.options = {}
@@ -103,7 +99,17 @@ try {
   if (values.positional) config.allowPositionals = values.positional;
   if (values.negative) config.allowNegative = values.negative;
   if (values.strict) config.strict = values.strict;
+  return config;
+}
 
+const splitIndex = process.argv.findIndex((val) => val === "--")
+let configArgs;
+if (splitIndex < 0) configArgs = process.argv.slice(2)
+else configArgs = process.argv.slice(2, splitIndex)
+
+let config;
+try {
+  config = parseConfig(configArgs);
 } catch (err) {
   process.stderr.write("Unable to parse your config\n")
   if (typeof err === 'object' && !!err && 'message' in err)
