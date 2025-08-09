@@ -78,6 +78,10 @@ function parseConfig(args) {
       strict: {
         type: 'boolean',
       },
+      format: {
+        type: 'string',
+        short: 'f'
+      }
     },
     args
   });
@@ -103,7 +107,7 @@ function parseConfig(args) {
   if (values.positional) config.allowPositionals = values.positional;
   if (values.negative) config.allowNegative = values.negative;
   if (values.strict) config.strict = values.strict;
-  return config;
+  return { format: values.format, config };
 }
 
 const splitIndex = process.argv.findIndex((val) => val === "--")
@@ -111,9 +115,9 @@ let configArgs;
 if (splitIndex < 0) configArgs = process.argv.slice(2)
 else configArgs = process.argv.slice(2, splitIndex)
 
-let config;
+let config, format;
 try {
-  config = parseConfig(configArgs);
+  ({ config, format } = parseConfig(configArgs));
 } catch (err) {
   process.stderr.write("Unable to parse your config\n")
   if (typeof err === 'object' && !!err && 'message' in err)
@@ -124,6 +128,7 @@ try {
 // if -- wasn't found, print the config out
 if (splitIndex < 0) {
   process.stdout.write(JSON.stringify(config))
+  if (process.stdout.isTTY) process.stdout.write('\n')
   process.exit(0)
 }
 
@@ -135,15 +140,22 @@ if (args.length <= 0) {
 
 try {
   const output = parseArgs({ ...config, args })
-  process.stdout.write(JSON.stringify(output))
-  // TODO: add format option, something like --format json or --format headers
-  // Format headers should have values in header format and positionals separated by \n\n
-  // Example:
+  // Format headers have values in header format. Positionals are separated by \n\n
   // <option>: <value>
   // <option>: <value>
   //   
   // positional one
   // positional two
+  if (format === 'headers') {
+    for (const [key, value] of Object.entries(output.values))
+      process.stdout.write(`${key}: ${value}\n`)
+    process.stdout.write('\n')
+    for (const value of output.positionals)
+      process.stdout.write(`${value}\n`)
+  } else {
+    process.stdout.write(JSON.stringify(output))
+    if (process.stdout.isTTY) process.stdout.write('\n')
+  }
 } catch {
   process.stderr.write("unable to parse your arguments.  Check your config\n")
   process.exit(1)
