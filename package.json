@@ -1,6 +1,6 @@
 {
   "name": "@benkenawell/parseargs",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Utilize node's arg parsing function for command line utilities",
   "main": "index.js",
   "type": "module",
