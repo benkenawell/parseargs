@@ -10,13 +10,13 @@ config="$(jq -n '
     "strict": false
   }
 ')"
+parseargs --config "$config" -- "$@" | jq .
 
 # calling index.js directly
 # ./index.js --config "$config" -- "$@" | jq .
 
 # calling parseargs after running `npm link`
 # parses the args to this script. Pretty prints with jq
-parseargs --config "$config" -- "$@" | jq .
 echo "------ ------"
 parseargs --option test=string -- --test one | jq .
 echo "------ ------"
@@ -36,3 +36,5 @@ parseargs --option test=string,t --option type=string --positional --format head
 # pull positionals from the headers format, one argument per line
 parseargs --option test=string,t --positional --format headers -- --test one two three "four five" |
   awk -v RS='\n\n' 'NR == 2 { printf $0 }'
+parseargs --option test=string,t --positional --format headers -- --test one two three "four five" |
+  awk '/^$/ {found=1;next} found {print $0}'

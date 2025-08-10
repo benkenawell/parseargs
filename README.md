@@ -40,6 +40,11 @@ parseargs --option test=string,t --no-strict -- "$@" | jq .
 parseargs --config "$(parseargs --option test=string,t --no-strict)" -- "$@" | jq .
 ```
 
+```bash
+# headers formatting
+parseargs --option test=string --positional --format headers -- --test one two three
+```
+
 ## Requirements
 
 Node, of course. `parseArgs` was made stable in v20.16 and v22.4, so any version newer than that should work.  In v16 and v18 it was still experimental, so it might work sometimes but I'm not supporting it.  If you need to manage your node versions, I recommend [mise](https://mise.jdx.dev/lang/node.html)

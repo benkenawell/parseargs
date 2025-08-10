@@ -7,6 +7,9 @@ USAGE
 
   Use "--" to separate arguments to this command from arguments you want to parse.
   Passing no separator will print the created config to stdout.
+
+  --format [header|json]        default: json.  the output format of the command.
+                                json is useful for jq, headers for awk
   
   --config <string>             JSON config to pass to nodejs parseArgs. Overridden by other options.
   --option <key>=<type>         easy way to set an option key for parsing. type can be "string" or "boolean"
@@ -41,6 +44,20 @@ Example:
 > config=$(jq -n '{"options": {"test": {"type": "string"}}, "strict": false}')
 > args=$(${basename(process.argv[1])} --config "$config" -- "$@")
 > jq .values.test <<<"$args"
+
+Formats:
+
+JSON { "values": {<key>: <value>}, "positionals": <array> }
+
+HEADERS
+
+<key>:<value>
+<key>:<value>
+<key>:<value>
+
+positional one
+positional two
+...
 
 Config Reference:
 https://nodejs.org/api/util.html#utilparseargsconfig
